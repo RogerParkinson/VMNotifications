@@ -4,7 +4,6 @@ import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
-import android.content.ContentValues
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
@@ -21,7 +20,7 @@ class BluetoothService : Service() {
     override fun onCreate() {
         super.onCreate()
         if (android.os.Debug.isDebuggerConnected()) {
-            android.os.Debug.waitForDebugger();
+            android.os.Debug.waitForDebugger()
         }
         Log.d(TAG, "onCreate() called")
     }
@@ -69,7 +68,7 @@ class BluetoothService : Service() {
         return device.createRfcommSocketToServiceRecord(uuid)
     }
 
-    fun connectToAddress(info:String) {
+    private fun connectToAddress(info:String) {
         val address = info.substring(info.length - 17)
         val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         var btSocket: BluetoothSocket?

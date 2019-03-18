@@ -2,7 +2,6 @@ package com.madurasoftware.vmnotifications.services
 
 import android.app.Notification.*
 import android.app.Service
-import android.content.ContentValues
 import android.content.Intent
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -15,13 +14,12 @@ class NotificationService : NotificationListenerService() {
     override fun onCreate() {
         super.onCreate()
         if (android.os.Debug.isDebuggerConnected()) {
-            android.os.Debug.waitForDebugger();
+            android.os.Debug.waitForDebugger()
         }
         Log.d(TAG, "onCreate() called")
     }
 
     override fun onStartCommand(intent: Intent, flags:Int, startId:Int):Int {
-//        val info = intent.getStringExtra(CONNECTION)
         return Service.START_NOT_STICKY
     }
 
@@ -57,6 +55,5 @@ class NotificationService : NotificationListenerService() {
     }
 
     companion object {
-        const val CONNECTION = "Connection"
     }
 }

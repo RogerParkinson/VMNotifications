@@ -3,28 +3,28 @@ package com.madurasoftware.vmnotifications.ui
 import android.app.Activity
 import android.app.Notification
 import android.bluetooth.BluetoothAdapter
-import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentFilter
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
-import android.util.Log
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import com.madurasoftware.vmnotifications.R
-import com.madurasoftware.vmnotifications.services.NotificationService
 import java.io.UnsupportedEncodingException
 import java.nio.charset.StandardCharsets
 
 class MainActivity : AppCompatActivity() {
 
     private var popup = Popup(this)
-    val receiver = Receiver()
+    private val receiver = Receiver()
 
     class MyHandler(private val mReadBuffer: TextView, private val mBluetoothStatus: TextView) : Handler() {
         override fun handleMessage(msg: android.os.Message) {

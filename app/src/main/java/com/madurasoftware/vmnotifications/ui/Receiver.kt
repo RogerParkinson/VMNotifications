@@ -4,10 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
-import android.widget.Toast
 import com.madurasoftware.vmnotifications.services.BluetoothService
 
-class Receiver() : BroadcastReceiver() {
+class Receiver : BroadcastReceiver() {
 
     private var handler: Handler? = null
 
@@ -15,7 +14,7 @@ class Receiver() : BroadcastReceiver() {
         this.handler = handler
     }
 
-    fun getHandler():Handler {
+    private fun getHandler():Handler {
         return handler!!
     }
 
