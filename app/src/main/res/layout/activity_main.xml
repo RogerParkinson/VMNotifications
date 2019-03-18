@@ -32,7 +32,7 @@
     <TextView
             android:id="@+id/readBuffer"
             android:layout_width="0dp"
-            android:layout_height="539dp"
+            android:layout_height="461dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="217dp"

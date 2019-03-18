@@ -10,6 +10,7 @@ import android.os.Handler
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -54,6 +55,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar) as Toolbar)
+
         if (BluetoothAdapter.getDefaultAdapter() == null) {
             Toast.makeText(this.applicationContext, R.string.no_bluetooth_on_this_device, Toast.LENGTH_LONG).show()
             finishAffinity() // exits the app
