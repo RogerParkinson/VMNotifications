@@ -68,17 +68,29 @@ class BluetoothService : Service() {
         return device.createRfcommSocketToServiceRecord(uuid)
     }
 
+    // If the bluetooth adapter returns null it means BT is turned off.
+    // We loop and wait for it to come back on again.
+    private fun getBluetoothAdapter(): BluetoothAdapter {
+
+        var bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        while (bluetoothAdapter == null) {
+            Thread.sleep(5000)
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        }
+        return bluetoothAdapter!!
+    }
+
     private fun connectToAddress(info:String) {
         val address = info.substring(info.length - 17)
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         var btSocket: BluetoothSocket?
         var keepRunning = true
-        broadcastMessage(CONNECTING_STATUS_CONNECTING,info)
 
-        val device = bluetoothAdapter!!.getRemoteDevice(address)
         while (keepRunning) {
             var fail = false
             Log.d(TAG, "Connecting...")
+            broadcastMessage(CONNECTING_STATUS_CONNECTING,info)
+            val bluetoothAdapter = getBluetoothAdapter()
+            val device = bluetoothAdapter.getRemoteDevice(address)
 
             try {
                 btSocket = createBluetoothSocket(
@@ -121,7 +133,14 @@ class BluetoothService : Service() {
                             break // poison value found, terminate the loop
                         }
                         val bytes = message.toByteArray()
-                        outStream.write(bytes)
+                        try {
+                            outStream.write(bytes)
+                        } catch (e2: IOException) {
+                            NotificationQueue.add(message)
+                            closeSocket(btSocket)
+                            Thread.sleep(5000)
+                            continue // this should re-conect and retry
+                        }
                         Log.d(TAG, "sent message")
                     }
                     Log.d(TAG, "disconnecting")
