@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">VMNotifications</string>
+    <string name="send">Send</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="connecting">Connecting&#8230;</string>
+    <string name="disconnecting">Disconnecting&#8230;</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="connected_to_device">Connected to device %1$s</string>
+    <string name="no_bluetooth_on_this_device">No Bluetooth on this device</string>
+    <string name="connect_first">Connect to something first</string>
+    <string name="bluetooth_enabled">Bluetooth enabled</string>
+    <string name="bluetooth_not_enabled">Bluetooth not enabled</string>
+</resources>
