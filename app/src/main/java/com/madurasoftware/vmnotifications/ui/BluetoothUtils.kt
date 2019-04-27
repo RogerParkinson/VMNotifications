@@ -33,7 +33,7 @@ const val CONNECTION_INFO = "ConnectionInfo"
 
 private const val TAG = "BluetoothUtils"
 private val mHandler = Handler()
-val SCAN_PERIOD:Long = 1000
+const val SCAN_PERIOD:Long = 1000
 internal var devicesDiscovered = TreeSet<DeviceWrapper>()
 private var mLastDeviceConnected: DeviceWrapper = DeviceWrapper(DeviceWrapper.DeviceType.NONE,"","")
 
