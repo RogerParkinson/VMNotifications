@@ -86,15 +86,14 @@ class BluetoothService : Service() {
         return bluetoothAdapter
     }
 
-    private fun connectToAddress(info:String) {
-        val address = info //.substring(info.length - 17)
+    private fun connectToAddress(address:String) {
         var btSocket: BluetoothSocket?
         var keepRunning = true
 
         while (keepRunning) {
             var fail = false
             Log.d(TAG, "Connecting...")
-            broadcastMessage(CONNECTING_STATUS_CONNECTING,info)
+            broadcastMessage(CONNECTING_STATUS_CONNECTING,address)
             val bluetoothAdapter = getBluetoothAdapter()
             val device = bluetoothAdapter.getRemoteDevice(address)
 
@@ -105,7 +104,7 @@ class BluetoothService : Service() {
                 )
             } catch (e: IOException) {
                 Log.e(TAG, "Socket creation failed", e)
-                broadcastMessage(CONNECTING_STATUS_FAILED,info)
+                broadcastMessage(CONNECTING_STATUS_FAILED,address)
                 return
             }
 
@@ -116,7 +115,7 @@ class BluetoothService : Service() {
                 try {
                     Log.e(TAG, "Socket connection failed", e)
                     fail = true
-                    broadcastMessage(CONNECTING_STATUS_FAILED,info)
+                    broadcastMessage(CONNECTING_STATUS_FAILED,address)
                     closeSocket(btSocket)
                 } catch (e2: IOException) {
                     Log.e(TAG, "Socket close failed", e2)
@@ -130,7 +129,7 @@ class BluetoothService : Service() {
                 try {
                     val outStream: OutputStream = btSocket.outputStream
                     Log.d(TAG, "Connected")
-                    broadcastMessage(CONNECTING_STATUS_CONNECTED,info)
+                    broadcastMessage(CONNECTING_STATUS_CONNECTED,address)
                     while (keepRunning) {
                         val message = NotificationQueue.take()// this will block until a message arrives
                         Log.d(TAG, "dequeued message $message")
@@ -151,10 +150,10 @@ class BluetoothService : Service() {
                     }
                     Log.d(TAG, "disconnecting")
 
-                    broadcastMessage(CONNECTING_STATUS_DISCONNECTING,info)
+                    broadcastMessage(CONNECTING_STATUS_DISCONNECTING,address)
                     closeSocket(btSocket) // cleanup the connection
                     btSocket = null
-                    broadcastMessage(CONNECTING_STATUS_DISCONNECTED,info)
+                    broadcastMessage(CONNECTING_STATUS_DISCONNECTED,address)
 
                 } catch (e2: IOException) {
                     Log.e(TAG, "IO Exception", e2)

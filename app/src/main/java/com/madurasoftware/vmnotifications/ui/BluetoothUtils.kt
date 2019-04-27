@@ -31,17 +31,14 @@ const val CONNECTING_STATUS_DISCONNECTED = 4
 const val ACTION = "com.madurasoftware.vmnotifications.services"
 const val CONNECTION_INFO = "ConnectionInfo"
 
-private val TAG = "BluetoothUtils"
-private var mScanning: Boolean = false
+private const val TAG = "BluetoothUtils"
 private val mHandler = Handler()
 val SCAN_PERIOD:Long = 1000
 internal var devicesDiscovered = TreeSet<DeviceWrapper>()
 private var mLastDeviceConnected: DeviceWrapper = DeviceWrapper(DeviceWrapper.DeviceType.NONE,"","")
 
 
-var bluetoothDevice: BluetoothDevice? = null
-
-val btScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner()
+val btScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner!!
 
 
 fun isBluetoothSupported(): Boolean {

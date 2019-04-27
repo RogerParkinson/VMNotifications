@@ -17,7 +17,7 @@ const val ACTION_GATT_SERVICES_DISCOVERED =
     "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED"
 const val ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE"
 const val EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA"
-val UUID_HEART_RATE_MEASUREMENT = UUID.fromString("whatever")
+val UUID_HEART_RATE_MEASUREMENT = UUID.fromString("whatever")!!
 
 // A service that interacts with the BLE device via the Android BLE API.
 class BluetoothLeService(private var bluetoothGatt: BluetoothGatt?) : Service() {

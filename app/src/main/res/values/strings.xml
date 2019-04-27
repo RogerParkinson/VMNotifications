@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">VMNotifications</string>
     <string name="message">Message</string>
+    <string name="user">User</string>
     <string name="connection_failed">Connection Failed</string>
     <string name="connecting">Connecting&#8230;</string>
     <string name="disconnecting">Disconnecting&#8230;</string>

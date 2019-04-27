@@ -16,7 +16,7 @@ class Popup(private val activity: Activity) {
     @SuppressLint("InflateParams")
     fun showPopup(anchorView: View) {
 
-        val layoutinflator = activity.getLayoutInflater()
+        val layoutinflator = activity.layoutInflater
         val popupView = layoutinflator.inflate(R.layout.paired_popup, null)
 
         val popupWindow = PopupWindow(
@@ -26,8 +26,8 @@ class Popup(private val activity: Activity) {
 
         val btArrayAdapter = ArrayAdapter<DeviceWrapper>(activity, android.R.layout.simple_list_item_1)
         val devicesListView = popupView.findViewById(R.id.devicesListView) as ListView
-        devicesListView.setAdapter(btArrayAdapter) // assign model to view
-        devicesListView.setOnItemClickListener(AdapterView.OnItemClickListener { parent, view, position, arg3 ->
+        devicesListView.adapter = btArrayAdapter // assign model to view
+        devicesListView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, arg3 ->
             popupWindow.dismiss()
             if (!isBluetoothSupported()) {
                 Toast.makeText(activity, R.string.bluetooth_not_enabled, Toast.LENGTH_SHORT).show()
@@ -35,13 +35,13 @@ class Popup(private val activity: Activity) {
             }
             val d = btArrayAdapter.getItem(position) as DeviceWrapper
             connectToAddress(anchorView.context,d)
-        })
+        }
         if (!(listPairedDevices(activity, btArrayAdapter))) {
             return
         }
 
         // If the PopupWindow should be focusable
-        popupWindow.setFocusable(true)
+        popupWindow.isFocusable = true
 
         // If you need the PopupWindow to dismiss when when touched outside
         popupWindow.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
@@ -52,7 +52,7 @@ class Popup(private val activity: Activity) {
             }
             false
         })
-        popupWindow.setOutsideTouchable(true)
+        popupWindow.isOutsideTouchable = true
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0,0)
     }
 }

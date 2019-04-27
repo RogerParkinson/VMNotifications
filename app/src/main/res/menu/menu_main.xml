@@ -7,7 +7,7 @@
     <item
             android:id="@+id/action_bluetooth"
             android:orderInCategory="300"
-            android:title="User"
+            android:title="@string/user"
             android:icon="@drawable/ic_bluetooth_connected_black_24dp"
             android:tint="@android:color/white"
             app:showAsAction="ifRoom">

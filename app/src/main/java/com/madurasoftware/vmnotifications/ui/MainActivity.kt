@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                     e.printStackTrace()
                 }
 
-                mReadBuffer.setText(readMessage)
+                mReadBuffer.text = readMessage
             }
 
             if (msg.what == CONNECTING_STATUS) {
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 //        }
     }
 
-    fun configureReceiver() {
+    private fun configureReceiver() {
         val filter = IntentFilter()
         filter.addAction(ACTION)
         val receiver = receiver
