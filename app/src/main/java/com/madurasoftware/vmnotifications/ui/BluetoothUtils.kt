@@ -106,23 +106,23 @@ fun connectToAddress(context: Context, d:DeviceWrapper) {
     }
 }
 
-fun sendMessageToLastConnection(context: Context, text:String) {
-
-    when (mLastDeviceConnected.deviceType) {
-        DeviceWrapper.DeviceType.BLE->{
-            val connectIntent = Intent(context, BLEService::class.java)
-            connectIntent.putExtra(BluetoothService.CONNECTION,"")
-            connectIntent.putExtra(BluetoothService.MESSAGE,text)
-            context.startService(connectIntent)
-        }
-        DeviceWrapper.DeviceType.V4 -> { val connectIntent = Intent(context, BluetoothService::class.java)
-            connectIntent.putExtra(BluetoothService.CONNECTION,"")
-            connectIntent.putExtra(BluetoothService.MESSAGE,text)
-            context.startService(connectIntent)
-        }
-        DeviceWrapper.DeviceType.NONE-> {}
-    }
-}
+//fun sendMessageToLastConnection(context: Context, text:String) {
+//
+//    when (mLastDeviceConnected.deviceType) {
+//        DeviceWrapper.DeviceType.BLE->{
+//            val connectIntent = Intent(context, BLEService::class.java)
+//            connectIntent.putExtra(BluetoothService.CONNECTION,"")
+//            connectIntent.putExtra(BluetoothService.MESSAGE,text)
+//            context.startService(connectIntent)
+//        }
+//        DeviceWrapper.DeviceType.V4 -> { val connectIntent = Intent(context, BluetoothService::class.java)
+//            connectIntent.putExtra(BluetoothService.CONNECTION,"")
+//            connectIntent.putExtra(BluetoothService.MESSAGE,text)
+//            context.startService(connectIntent)
+//        }
+//        DeviceWrapper.DeviceType.NONE-> {}
+//    }
+//}
 
 // Device scan callback.
 private val leScanCallback = object : ScanCallback() {
