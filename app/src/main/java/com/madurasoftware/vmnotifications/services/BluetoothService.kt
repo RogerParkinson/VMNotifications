@@ -26,9 +26,14 @@ class BluetoothService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags:Int, startId:Int):Int {
-        val info = intent.getStringExtra(CONNECTION)
-        Log.d(TAG, "onStartCommand")
-        connectToAddress(info)
+        val address = intent.getStringExtra(CONNECTION)
+        val message = intent.getStringExtra(MESSAGE)
+        Log.d(TAG, "onStartCommand [$address] [$message]")
+        if (address == "") {
+            NotificationQueue.add(message)
+        } else {
+            connectToAddress(address)
+        }
         return Service.START_NOT_STICKY
     }
 
@@ -51,6 +56,7 @@ class BluetoothService : Service() {
     }
 
     companion object {
+        const val MESSAGE = "Message"
         const val CONNECTION = "Connection"
         const val CONNECTION_STATUS = "Connection Status"
 
@@ -81,7 +87,7 @@ class BluetoothService : Service() {
     }
 
     private fun connectToAddress(info:String) {
-        val address = info.substring(info.length - 17)
+        val address = info //.substring(info.length - 17)
         var btSocket: BluetoothSocket?
         var keepRunning = true
 

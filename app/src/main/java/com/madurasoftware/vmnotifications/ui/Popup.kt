@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.madurasoftware.vmnotifications.R
+import com.madurasoftware.vmnotifications.services.DeviceWrapper
 
 class Popup(private val activity: Activity) {
 
@@ -23,18 +24,17 @@ class Popup(private val activity: Activity) {
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
-        val btArrayAdapter = ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1)
+        val btArrayAdapter = ArrayAdapter<DeviceWrapper>(activity, android.R.layout.simple_list_item_1)
         val devicesListView = popupView.findViewById(R.id.devicesListView) as ListView
         devicesListView.setAdapter(btArrayAdapter) // assign model to view
-        devicesListView.setOnItemClickListener(AdapterView.OnItemClickListener { av, v, arg2, arg3 ->
+        devicesListView.setOnItemClickListener(AdapterView.OnItemClickListener { parent, view, position, arg3 ->
             popupWindow.dismiss()
             if (!isBluetoothSupported()) {
                 Toast.makeText(activity, R.string.bluetooth_not_enabled, Toast.LENGTH_SHORT).show()
                 return@OnItemClickListener
             }
-            // Get the device MAC address, which is the last 17 chars in the View
-            val info = (v as TextView).text.toString()
-            connectToAddress(anchorView.context,info)
+            val d = btArrayAdapter.getItem(position) as DeviceWrapper
+            connectToAddress(anchorView.context,d)
         })
         if (!(listPairedDevices(activity, btArrayAdapter))) {
             return
