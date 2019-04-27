@@ -8,7 +8,7 @@
     <ListView
             android:id="@+id/devicesListView"
             android:layout_width="wrap_content"
-            android:layout_height="389dp"
+            android:layout_height="280dp"
             android:choiceMode="singleChoice"
             android:scrollbars="horizontal"/>
 
