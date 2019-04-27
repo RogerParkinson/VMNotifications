@@ -54,6 +54,5 @@ class NotificationService : NotificationListenerService() {
         NotificationQueue.add(message)
     }
 
-    companion object {
-    }
+    companion object
 }

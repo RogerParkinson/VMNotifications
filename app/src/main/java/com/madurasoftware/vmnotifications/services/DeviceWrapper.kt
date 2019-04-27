@@ -1,6 +1,6 @@
 package com.madurasoftware.vmnotifications.services
 
-class DeviceWrapper(public val deviceType: DeviceType, public val name: String, public val address: String) : Comparable<DeviceWrapper> {
+class DeviceWrapper(val deviceType: DeviceType, public val name: String, public val address: String) : Comparable<DeviceWrapper> {
 
     enum class DeviceType {
         BLE, V4, NONE

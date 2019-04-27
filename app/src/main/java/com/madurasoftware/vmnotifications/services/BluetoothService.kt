@@ -83,7 +83,7 @@ class BluetoothService : Service() {
             Thread.sleep(5000)
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         }
-        return bluetoothAdapter!!
+        return bluetoothAdapter
     }
 
     private fun connectToAddress(info:String) {

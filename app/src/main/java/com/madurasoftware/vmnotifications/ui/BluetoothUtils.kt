@@ -4,19 +4,14 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Handler
-import android.os.ParcelUuid
 import android.util.Log
-import android.view.View
 import android.widget.ArrayAdapter
-import com.madurasoftware.vmnotifications.R
 import com.madurasoftware.vmnotifications.services.BLEService
 import com.madurasoftware.vmnotifications.services.BluetoothService
 import com.madurasoftware.vmnotifications.services.DeviceWrapper
@@ -83,7 +78,7 @@ fun listPairedDevices(activity: Activity, array: ArrayAdapter<DeviceWrapper>):Bo
         Log.d(ContentValues.TAG, "exception $e")
         return false
     }
-    startScanning(array);
+    startScanning(array)
     val pairedDevices = BluetoothAdapter.getDefaultAdapter()!!.getBondedDevices()
     for (device in pairedDevices!!) {
         array.add(DeviceWrapper(DeviceWrapper.DeviceType.V4,device.name,device.address))
@@ -130,7 +125,7 @@ private val leScanCallback = object : ScanCallback() {
         val d = DeviceWrapper(DeviceWrapper.DeviceType.BLE,result.device.name,result.device.address)
 //        Log.d(TAG, "discovered ${d}")
         if (devicesDiscovered.add(d)) {
-            Log.d(TAG, "added ${d}")
+            Log.d(TAG, "added $d")
         }
     }
 }
