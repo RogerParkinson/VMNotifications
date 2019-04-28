@@ -7,15 +7,15 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import com.madurasoftware.vmnotifications.ui.*
 import java.util.*
 import kotlin.experimental.and
 
 class BLEService: Service() {
 
-    private val TAG = "BluetoothService"
+    private val TAG = "BLEService"
     private val mBinder = LocalBinder()//Binder for Activity that binds to this Service
     private var mBluetoothManager: BluetoothManager? = null//BluetoothManager used to get the BluetoothAdapter
-    private var mBluetoothAdapter: BluetoothAdapter? = null//The BluetoothAdapter controls the BLE radio in the phone/tablet
     private var mBluetoothGatt: BluetoothGatt? = null//BluetoothGatt controls the Bluetooth communication link
     private var mBluetoothDeviceAddress: String? = null//Address of the connected BLE device
     private val mCompleResponseByte = ByteArray(100)
@@ -87,8 +87,6 @@ class BLEService: Service() {
                 broadcastUpdate(BLEConstants.ACTION_DATA_AVAILABLE, characteristic)
             }                     //Go broadcast an intent with the characteristic data
         }
-
-
     }
 
     override fun onCreate() {
@@ -100,18 +98,17 @@ class BLEService: Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags:Int, startId:Int):Int {
-        val info = intent.getStringExtra(BluetoothService.CONNECTION)
+        val address = intent.getStringExtra(BluetoothService.CONNECTION)
         if (android.os.Debug.isDebuggerConnected()) {
             android.os.Debug.waitForDebugger()
         }
-        Log.d(TAG, "onStartCommand")
-        connect(info)
+        Log.d(TAG, "onStartCommand with address $address")
+        connect(address)
         return Service.START_NOT_STICKY
     }
 
     // An activity has bound to this service
     override fun onBind(intent: Intent): IBinder? {
-
         return mBinder                                                                 //Return LocalBinder when an Activity binds to this Service
     }
 
@@ -126,14 +123,36 @@ class BLEService: Service() {
         return super.onUnbind(intent)
     }
 
-    fun connect(address: String?): Boolean {
+    private fun broadcastMessage(message:Int, info:String) {
+        val intent = Intent()
+        intent.action = ACTION
+        intent.flags = Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+        intent.putExtra(BluetoothService.CONNECTION_STATUS,message)
+        intent.putExtra(CONNECTION_INFO,info)
+        Log.d(TAG, "broadcasting ${BluetoothService.CONNECTION_STATUS} $message $info")
+        sendBroadcast(intent)
+    }
+
+    private fun getBluetoothAdapter(): BluetoothAdapter {
+        Log.d(TAG, "getBluetoothAdapter")
+        var bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        while (bluetoothAdapter == null) {
+            Thread.sleep(5000)
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        }
+        Log.d(TAG, "getBluetoothAdapter: success")
+        return bluetoothAdapter
+    }
+
+    fun connect(address: String): Boolean {
+        broadcastMessage(CONNECTING_STATUS_CONNECTING,address)
         try {
-
-            if (mBluetoothAdapter == null || address == null) {                             //Check that we have a Bluetooth adappter and device address
-                Log.i(TAG, "BluetoothAdapter not initialized or unspecified address.")     //Log a warning that something went wrong
-                return false                                                               //Failed to connect
+            mBluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            if (mBluetoothManager == null) {
+                Log.d(TAG, "Bluetooth Manager is null")
+                return false
             }
-
+            var bluetoothAdapter = getBluetoothAdapter()
             // Previously connected device.  Try to reconnect.
             if (mBluetoothDeviceAddress != null && address == mBluetoothDeviceAddress && mBluetoothGatt != null) { //See if there was previous connection to the device
                 Log.i(TAG, "Trying to use an existing mBluetoothGatt for connection.")
@@ -142,15 +161,19 @@ class BLEService: Service() {
                 //Were not able to connect
                 return mBluetoothGatt!!.connect()
             }
-
-            val device = mBluetoothAdapter!!.getRemoteDevice(address)
+            Log.d(TAG, "getting device")
+            val device = bluetoothAdapter.getRemoteDevice(address)
                 ?: //Check whether a device was returned
-                return false                                                               //Failed to find the device
+                return false      //Failed to find the device
             //No previous device so get the Bluetooth device by referencing its address
-
+            Log.d(TAG, "getting gatt")
             mBluetoothGatt = device.connectGatt(this, false, mGattCallback)                //Directly connect to the device so autoConnect is false
             mBluetoothDeviceAddress = address                                              //Record the address in case we need to reconnect with the existing BluetoothGatt
-
+            if (mBluetoothGatt != null) {
+                broadcastMessage(CONNECTING_STATUS_CONNECTED,address)
+            } else {
+                broadcastMessage(CONNECTING_STATUS_FAILED,address)
+            }
             return true
         } catch (e: Exception) {
             Log.i(TAG, e.message)
@@ -197,7 +220,7 @@ class BLEService: Service() {
     // Enable indication on a characteristic
     fun setCharacteristicIndication(characteristic: BluetoothGattCharacteristic, enabled: Boolean) {
         try {
-            if (mBluetoothAdapter == null || mBluetoothGatt == null) { //Check that we have a GATT connection
+            if (mBluetoothGatt == null) { //Check that we have a GATT connection
                 Log.i(TAG, "BluetoothAdapter not initialized")
                 return
             }
@@ -222,7 +245,7 @@ class BLEService: Service() {
     fun writeCharacteristic(characteristic: BluetoothGattCharacteristic) {
         try {
 
-            if (mBluetoothAdapter == null || mBluetoothGatt == null) {                      //Check that we have access to a Bluetooth radio
+            if (mBluetoothGatt == null) {                      //Check that we have access to a Bluetooth radio
 
                 return
             }
@@ -261,7 +284,7 @@ class BLEService: Service() {
     // BluetoothGattCallback.onConnectionStateChange() will get the result
     fun disconnect() {
 
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {                      //Check that we have a GATT connection to disconnect
+        if (mBluetoothGatt == null) {                      //Check that we have a GATT connection to disconnect
 
             return
         }
@@ -272,7 +295,7 @@ class BLEService: Service() {
     // BluetoothGattCallback onCharacteristicRead callback method.
     // For information only. This application uses Indication to receive updated characteristic data, not Read
     fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {                      //Check that we have access to a Bluetooth radio
+        if (mBluetoothGatt == null) {                      //Check that we have access to a Bluetooth radio
             return
         }
         val status = mBluetoothGatt!!.readCharacteristic(characteristic)                              //Request the BluetoothGatt to Read the characteristic
@@ -307,33 +330,12 @@ class BLEService: Service() {
         }
     }
 
-    // Initialize by getting the BluetoothManager and BluetoothAdapter
-    fun initialize(): Boolean {
-        if (mBluetoothManager == null) {                                                //See if we do not already have the BluetoothManager
-            mBluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager //Get the BluetoothManager
-
-            if (mBluetoothManager == null) {                                            //See if we failed
-                Log.i(TAG, "Unable to initialize BluetoothManager.")
-                return false                                                           //Report the error
-            }
-        }
-        mBluetoothAdapter = mBluetoothManager!!.adapter                             //Ask the BluetoothManager to get the BluetoothAdapter
-
-        if (mBluetoothAdapter == null) {                                                //See if we failed
-            Log.i(TAG, "Unable to obtain a BluetoothAdapter.")
-
-            return false                                                               //Report the error
-        }
-
-        return true                                                                    //Success, we have a BluetoothAdapter to control the radio
-    }
-
     // Enable notification on a characteristic
     // For information only. This application uses Indication, not Notification
     fun setCharacteristicNotification(characteristic: BluetoothGattCharacteristic, enabled: Boolean) {
         try {
 
-            if (mBluetoothAdapter == null || mBluetoothGatt == null) {                      //Check that we have a GATT connection
+            if (mBluetoothGatt == null) {                      //Check that we have a GATT connection
                 Log.i(TAG, "BluetoothAdapter not initialized")
 
                 return

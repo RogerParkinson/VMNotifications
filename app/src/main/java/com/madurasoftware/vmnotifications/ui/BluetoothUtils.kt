@@ -88,10 +88,12 @@ fun connectToAddress(context: Context, d:DeviceWrapper) {
     context.startService(notificationIntent)
     mLastDeviceConnected = d
     if (d.deviceType == DeviceWrapper.DeviceType.BLE) {
+        Log.d(TAG, "Invoking BLEService with ${d.address}")
         val connectIntent = Intent(context, BLEService::class.java)
         connectIntent.putExtra(BluetoothService.CONNECTION,d.address)
         context.startService(connectIntent)
     } else {
+        Log.d(TAG, "Invoking BluetoothService with ${d.address}")
         val connectIntent = Intent(context, BluetoothService::class.java)
         connectIntent.putExtra(BluetoothService.CONNECTION,d.address)
         context.startService(connectIntent)
