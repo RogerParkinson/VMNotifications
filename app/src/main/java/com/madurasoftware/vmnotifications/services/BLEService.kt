@@ -12,7 +12,8 @@ import com.madurasoftware.vmnotifications.ui.*
 import java.util.*
 import kotlin.experimental.and
 import android.bluetooth.BluetoothGattCharacteristic
-
+import java.nio.charset.Charset
+import java.util.concurrent.ConcurrentLinkedQueue
 
 
 class BLEService: Service() {
@@ -23,6 +24,12 @@ class BLEService: Service() {
     private var mBluetoothGatt: BluetoothGatt? = null//BluetoothGatt controls the Bluetooth communication link
     private var mBluetoothDeviceAddress: String? = null//Address of the connected BLE device
     private val mCompleResponseByte = ByteArray(100)
+    private val sendQueue: Queue<String>? = ConcurrentLinkedQueue<String>() //To be inited with sendQueue = new ConcurrentLinkedQueue<String>();
+    @Volatile
+    private var isWriting: Boolean = false
+    private var characteristic: BluetoothGattCharacteristic? = null
+    private val MAX_MESSAGE_SIZE = 20
+
     private val targetUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 
 
@@ -77,11 +84,21 @@ class BLEService: Service() {
         }
 
         //For information only. This application sends small packets infrequently and does not need to know what the previous write completed
-        override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) { //A request to Write has completed
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            status: Int
+        ) { //A request to Write has completed
+            super.onCharacteristicWrite(gatt, characteristic, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {                                 //See if the write was successful
                 Log.e(TAG, "**ACTION_DATA_WRITTEN**$characteristic")
-                broadcastUpdate(BLEConstants.ACTION_DATA_WRITTEN, characteristic)                   //Go broadcast an intent to say we have have written data
+                broadcastUpdate(
+                    BLEConstants.ACTION_DATA_WRITTEN,
+                    characteristic
+                )                   //Go broadcast an intent to say we have have written data
             }
+            isWriting = false;
+            _send();
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic?) {
@@ -110,7 +127,7 @@ class BLEService: Service() {
         }
         Log.d(TAG, "onStartCommand with address $address")
         while (connect(address)) {
-            val characteristic = figureCharacteristic(mBluetoothGatt!!)
+            characteristic = figureCharacteristic(mBluetoothGatt!!)
             if (characteristic == null) {
                 Thread.sleep(1000)
                 continue
@@ -119,7 +136,7 @@ class BLEService: Service() {
 
             //sendMessage(mBluetoothGatt!!,characteristic,"connected")
 //            characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT // doesn't work
-            if (!processMessages(mBluetoothGatt!!, characteristic)) {
+            if (!processMessages()) {
                 break;
             }
         }
@@ -178,7 +195,7 @@ class BLEService: Service() {
         return bluetoothAdapter
     }
 
-    private fun processMessages(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic): Boolean {
+    private fun processMessages(): Boolean {
 //        if (!gatt.requestMtu(60)) {
 //            Log.d(TAG, "requestMtu failed")
 //        }
@@ -189,22 +206,44 @@ class BLEService: Service() {
                 return false // poison value found, terminate the loop
             }
 
-            if (!sendMessage(gatt,characteristic,message)) {
+            if (!sendMessage(message+'\n')) {
                 return true // tell caller to retry connection
             }
         }
 
     }
 
-    private fun sendMessage(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, message: String):Boolean {
-        Log.d(TAG, "sendMessage $message")
-        val bytes = message.toByteArray()
-        characteristic.setValue(bytes);
-        if (!gatt.writeCharacteristic(characteristic)) {
-            Log.d(TAG, "failed to write")
+    private fun _send(): Boolean {
+        if (sendQueue!!.isEmpty()) {
+            Log.d("TAG", "_send(): EMPTY QUEUE")
             return false
         }
+        Log.d(TAG, "_send(): Sending: " + sendQueue.peek())
+        characteristic!!.value = sendQueue.poll().toByteArray(Charset.forName("UTF-8"))
+        isWriting = true // Set the write in progress flag
+        mBluetoothGatt!!.writeCharacteristic(characteristic)
         return true
+    }
+
+    private fun sendMessage(message: String):Boolean {
+        Log.d(TAG, "sendMessage $message")
+//        val bytes = message.toByteArray()
+//        characteristic.setValue(bytes);
+//        if (!mBluetoothGatt!!.writeCharacteristic(characteristic)) {
+//            Log.d(TAG, "failed to write")
+//            return false
+//        }
+//        return true
+        var data = message
+        while (data.length > MAX_MESSAGE_SIZE) {
+            sendQueue!!.add(data.substring(0, MAX_MESSAGE_SIZE))
+            data = data.substring(MAX_MESSAGE_SIZE)
+        }
+        sendQueue!!.add(data)
+        if (!isWriting) _send()
+        return true //0
+
+
     }
 
     private fun connect(address: String): Boolean {
