@@ -6,10 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.support.v4.content.ContextCompat.getSystemService
 import android.util.Log
 import com.madurasoftware.vmnotifications.ui.*
 import java.util.*
 import kotlin.experimental.and
+import android.bluetooth.BluetoothGattCharacteristic
+
+
 
 class BLEService: Service() {
 
@@ -19,6 +23,7 @@ class BLEService: Service() {
     private var mBluetoothGatt: BluetoothGatt? = null//BluetoothGatt controls the Bluetooth communication link
     private var mBluetoothDeviceAddress: String? = null//Address of the connected BLE device
     private val mCompleResponseByte = ByteArray(100)
+    private val targetUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 
 
     private val mGattCallback = object : BluetoothGattCallback() {
@@ -37,8 +42,9 @@ class BLEService: Service() {
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {              //BLE service discovery complete
             if (status == BluetoothGatt.GATT_SUCCESS) {                                 //See if the service discovery was successful
                 Log.i(TAG, "**ACTION_SERVICE_DISCOVERED**$status")
-                broadcastUpdate(BLEConstants.ACTION_GATT_SERVICES_DISCOVERED)                       //Go broadcast an intent to say we have discovered services
-            } else {                                                                      //Service discovery failed so log a warning
+                broadcastUpdate(BLEConstants.ACTION_GATT_SERVICES_DISCOVERED)            //Go broadcast an intent to say we have discovered services
+                figureCharacteristic(gatt)
+            } else {                                                                     //Service discovery failed so log a warning
                 Log.i(TAG, "onServicesDiscovered received: $status")
             }
         }
@@ -103,8 +109,36 @@ class BLEService: Service() {
             android.os.Debug.waitForDebugger()
         }
         Log.d(TAG, "onStartCommand with address $address")
-        connect(address)
+        while (connect(address)) {
+            val characteristic = figureCharacteristic(mBluetoothGatt!!)
+            if (characteristic == null) {
+                Thread.sleep(1000)
+                continue
+            }
+            //Log.d(TAG, "sending message")
+
+            //sendMessage(mBluetoothGatt!!,characteristic,"connected")
+//            characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT // doesn't work
+            if (!processMessages(mBluetoothGatt!!, characteristic)) {
+                break;
+            }
+        }
+        Log.d(TAG, "onStartCommand exiting")
         return Service.START_NOT_STICKY
+    }
+
+    private fun figureCharacteristic(gatt: BluetoothGatt): BluetoothGattCharacteristic? {
+//        Log.d(TAG, "figureCharacteristic gatt.device=${gatt.device} ")
+        for (service in gatt.services) {
+//            Log.d(TAG, "FigureCharacteristic service= ${service.uuid}")
+            for (characteristic in service.characteristics) {
+                if (characteristic.uuid == targetUUID) {
+                    Log.d(TAG, "figureCharacteristic found uuid=${characteristic.uuid}")
+                    return characteristic
+                }
+            }
+        }
+        return null;
     }
 
     // An activity has bound to this service
@@ -144,7 +178,36 @@ class BLEService: Service() {
         return bluetoothAdapter
     }
 
-    fun connect(address: String): Boolean {
+    private fun processMessages(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic): Boolean {
+//        if (!gatt.requestMtu(60)) {
+//            Log.d(TAG, "requestMtu failed")
+//        }
+        while (true) {
+            val message = NotificationQueue.take()// this will block until a message arrives
+            Log.d(TAG, "dequeued message $message")
+            if (message.contains("[poison]", false)) {
+                return false // poison value found, terminate the loop
+            }
+
+            if (!sendMessage(gatt,characteristic,message)) {
+                return true // tell caller to retry connection
+            }
+        }
+
+    }
+
+    private fun sendMessage(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, message: String):Boolean {
+        Log.d(TAG, "sendMessage $message")
+        val bytes = message.toByteArray()
+        characteristic.setValue(bytes);
+        if (!gatt.writeCharacteristic(characteristic)) {
+            Log.d(TAG, "failed to write")
+            return false
+        }
+        return true
+    }
+
+    private fun connect(address: String): Boolean {
         broadcastMessage(CONNECTING_STATUS_CONNECTING,address)
         try {
             mBluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
