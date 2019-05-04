@@ -47,8 +47,8 @@ class NotificationService : NotificationListenerService() {
             else -> return
         }
         val title = map.getString(EXTRA_TITLE) ?: ""
-        val text = map.getString(EXTRA_TEXT) ?: ""
-        val message = "[$category][$title][$text]"
+        val text = (map.getString(EXTRA_TEXT) ?: "").trim()
+        val message = "[$category][$title]$text"
 
         Log.d(TAG, message)
         NotificationQueue.add(message)

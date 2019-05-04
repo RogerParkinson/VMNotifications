@@ -13,5 +13,14 @@
             app:showAsAction="ifRoom">
 
     </item>
+    <item
+            android:id="@+id/action_disconnect"
+            android:orderInCategory="300"
+            android:title="@string/user"
+            android:icon="@drawable/ic_bluetooth_disabled_black_24dp"
+            android:tint="@android:color/white"
+            app:showAsAction="ifRoom">
+
+    </item>
 
 </menu>

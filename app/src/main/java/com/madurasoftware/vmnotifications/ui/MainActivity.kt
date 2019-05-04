@@ -119,6 +119,12 @@ class MainActivity : AppCompatActivity() {
             popup.showPopup(findViewById<View>(R.id.toolbar))
             return true
         }
+        if (id == R.id.action_disconnect) {
+            // They clicked the Bluetooth button
+            // get the paired devices and display them
+            sendNotification("[poison]")
+            return true
+        }
 
         return super.onOptionsItemSelected(item)
     }
