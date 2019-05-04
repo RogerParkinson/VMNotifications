@@ -19,9 +19,6 @@ class Receiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-
-//        Toast.makeText(context, "Broadcast Intent Detected.",
-//            Toast.LENGTH_LONG).show()
         val status = intent.extras.getInt(BluetoothService.CONNECTION_STATUS,-100)
         val info = intent.extras.getString(CONNECTION_INFO,"")
         getHandler().obtainMessage(CONNECTING_STATUS, status, -1, info)

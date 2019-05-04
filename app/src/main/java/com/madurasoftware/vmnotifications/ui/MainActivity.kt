@@ -63,12 +63,9 @@ class MainActivity : AppCompatActivity() {
         }
         configureReceiver()
         val mText = findViewById<EditText>(R.id.editText)
-        val mButton = findViewById<Button>(R.id.button).setOnClickListener {
+        findViewById<Button>(R.id.button).setOnClickListener {
             sendNotification(mText.text.toString())
         }
-//        val mButtonMessage = findViewById<Button>(R.id.message).setOnClickListener {
-//            sendMessageToLastConnection(this.applicationContext,mText.text.toString())
-//        }
     }
 
     private fun configureReceiver() {

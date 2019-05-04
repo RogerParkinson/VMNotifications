@@ -59,7 +59,6 @@ class BluetoothService : Service() {
         const val MESSAGE = "Message"
         const val CONNECTION = "Connection"
         const val CONNECTION_STATUS = "Connection Status"
-
     }
 
     @Throws(IOException::class)
@@ -122,7 +121,6 @@ class BluetoothService : Service() {
                 } finally {
                     btSocket = null
                 }
-
             }
 
             if (!fail) {
@@ -158,7 +156,6 @@ class BluetoothService : Service() {
                 } catch (e2: IOException) {
                     Log.e(TAG, "IO Exception", e2)
                     closeSocket(btSocket)
-                    btSocket = null
                     keepRunning = false
                 }
             }

@@ -2,7 +2,6 @@ package com.madurasoftware.vmnotifications.ui
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.ContentValues
@@ -37,9 +36,7 @@ const val SCAN_PERIOD:Long = 1000
 internal var devicesDiscovered = TreeSet<DeviceWrapper>()
 private var mLastDeviceConnected: DeviceWrapper = DeviceWrapper(DeviceWrapper.DeviceType.NONE,"","")
 
-
 val btScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner!!
-
 
 fun isBluetoothSupported(): Boolean {
     if (BluetoothAdapter.getDefaultAdapter() == null) {
@@ -114,7 +111,7 @@ private fun startScanning(array: ArrayAdapter<DeviceWrapper>) {
     Log.d(TAG, "starting BLE scan")
     devicesDiscovered.clear()
     AsyncTask.execute { btScanner.startScan(leScanCallback) }
-    mHandler.postDelayed(Runnable { stopScanning(array) }, SCAN_PERIOD)
+    mHandler.postDelayed({ stopScanning(array) }, SCAN_PERIOD)
 }
 
 fun stopScanning(array: ArrayAdapter<DeviceWrapper>) {
