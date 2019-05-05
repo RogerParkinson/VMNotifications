@@ -24,8 +24,7 @@ There actually two bluetooth services, and we choose one of them depending on wh
 the same thing. Either way the bluetooth service waits for something in the queue and sends it to the device. Because of the queue the services all run in the same memory space, so it
 is really one service with two threads, which is why they both have the same id.
 
-<img src="readme/screen1.png?resize=200%2C159" style="width: 200px;"/>
-![](file:///readme/screen1.png | width=100)
+<img src="readme/screen1.png?resize=50%2C159" style="width: 50px;"/>
 
 This is what the initial screen looks like. The two menu icons connect and disconnect respectively. When you press the connect button you'll see a list of paired devices and scanned
 BLE devices. It looks like this.
